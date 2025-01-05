@@ -32,3 +32,4 @@ app_web
 - Creé un nuevo servicio web vinculado al repositorio de GitHub en Render.
 - Configuré el servicio web Render para instalar los paquetes necesarios y ejecutar el archivo app.py.
 - Implementé la versión final de la aplicación en Render.
+- Aplicacion https://project-7-app-web.onrender.com/
