@@ -14,7 +14,11 @@ df = pd.read_csv('vehicles_us_cleaned.csv')
 missing_values = df[['manufacturer', 'type', 'price']].isnull().sum()
 if missing_values.any():
     st.warning(f'Missing values detected in columns: {missing_values[missing_values > 0]}')
-    df = df.dropna(subset=['manufacturer', 'type', 'price'])  # or handle accordingly
+    # Option 1: Drop rows with missing values in key columns
+    df = df.dropna(subset=['manufacturer', 'type', 'price']) 
+    # Option 2: Fill missing values with a placeholder (e.g., 'Unknown')
+    # df['manufacturer'].fillna('Unknown', inplace=True)
+    # df['type'].fillna('Unknown', inplace=True)
 
 # Display the data in the app
 st.write(df)
@@ -26,6 +30,8 @@ st.plotly_chart(fig)
 
 # Histogram of price distribution between manufacturers
 st.subheader('Histogram of price distribution between manufacturers')
+
+# Ensure the selectboxes do not contain any missing values
 manufacturer1 = st.selectbox('Manufacturer 1', df['manufacturer'].dropna().unique(), index=1)
 manufacturer2 = st.selectbox('Manufacturer 2', df['manufacturer'].dropna().unique(), index=2)
 normalized = st.checkbox('Normalized')
