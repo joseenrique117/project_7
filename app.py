@@ -10,43 +10,45 @@ st.title('US Vehicle Advertisement Listings')
 # Read data from CSV file vehicles_us_cleaned.csv
 df = pd.read_csv('vehicles_us_cleaned.csv')
 
-# Check for missing values in relevant columns
+# Check for missing values in relevant columns and drop them
 missing_values = df[['manufacturer', 'type', 'price']].isnull().sum()
 if missing_values.any():
     st.warning(f'Missing values detected in columns: {missing_values[missing_values > 0]}')
-    # Drop rows with missing values in key columns
+    # Drop rows with missing values in key columns (manufacturer, type, price)
     df = df.dropna(subset=['manufacturer', 'type', 'price'])
 
-# Display the data in the app
+# Display the cleaned data in the app
 st.write(df)
 
 # Histogram of vehicle types by manufacturer
 st.subheader('Histogram of the types of vehicles by manufacturer')
 
-# Drop rows where 'manufacturer' or 'type' is NaN before plotting
+# Ensure there are no NaN values in the relevant columns
 df_clean = df.dropna(subset=['manufacturer', 'type'])
 
+# Now plot the histogram
 fig = px.histogram(df_clean, x='manufacturer', color='type')
 st.plotly_chart(fig)
 
 # Histogram of price distribution between manufacturers
 st.subheader('Histogram of price distribution between manufacturers')
 
-# Ensure the selectboxes do not contain any missing values
+# Ensure there are no NaN values for 'manufacturer' and 'price'
 manufacturer1 = st.selectbox('Manufacturer 1', df['manufacturer'].dropna().unique(), index=1)
 manufacturer2 = st.selectbox('Manufacturer 2', df['manufacturer'].dropna().unique(), index=2)
 normalized = st.checkbox('Normalized')
 
-# Filter out rows where 'price' is NaN for the selected manufacturers
-df_filtered = df[df['price'].notna()]
+# Filter out rows where 'price' or 'manufacturer' is NaN for the selected manufacturers
+df_filtered = df[df['price'].notna() & df['manufacturer'].notna()]
 
+# Create the histogram
 fig = px.histogram()
 fig.add_trace(go.Histogram(x=df_filtered[df_filtered['manufacturer'] == manufacturer1]['price'], 
                            name=manufacturer1, opacity=0.75, histnorm='percent'))
 fig.add_trace(go.Histogram(x=df_filtered[df_filtered['manufacturer'] == manufacturer2]['price'], 
                            name=manufacturer2, opacity=0.75, histnorm='percent'))
 
-# Normalize the histogram if the checkbox is marked
+# Normalize the histogram if the checkbox is checked
 if normalized:
     fig.update_layout(barmode='overlay')
     fig.update_traces(opacity=0.75)
@@ -55,7 +57,7 @@ if normalized:
 fig.update_xaxes(title_text='Price')
 fig.update_yaxes(title_text='Percentage')
 
-# Display the histogram plot
+# Display the histogram
 st.plotly_chart(fig)
 
 # Scatter plot matrix
