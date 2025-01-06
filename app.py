@@ -1,62 +1,63 @@
-#Importar librerias
+# Import libraries
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-
-#Titulo de la app centrado
+# Title of the app centered
 st.title('US Vehicle Advertisement Listings')
 
-
-#Leer la data de csv file vehicled_us_clean.csv
+# Read data from CSV file vehicles_us_cleaned.csv
 df = pd.read_csv('vehicles_us_cleaned.csv')
 
-#Mostrar la data en la app
+# Check for missing values in relevant columns
+missing_values = df[['manufacturer', 'type', 'price']].isnull().sum()
+if missing_values.any():
+    st.warning(f'Missing values detected in columns: {missing_values[missing_values > 0]}')
+    df = df.dropna(subset=['manufacturer', 'type', 'price'])  # or handle accordingly
+
+# Display the data in the app
 st.write(df)
 
-#Histogram de los tipos de vehículos por fabricante
+# Histogram of vehicle types by manufacturer
 st.subheader('Histogram of the types of vehicles by manufacturer')
 fig = px.histogram(df, x='manufacturer', color='type')
-# plot del histogram
 st.plotly_chart(fig)
 
-#Histogram de distribución de precios entre fabricantes
+# Histogram of price distribution between manufacturers
 st.subheader('Histogram of price distribution between manufacturers')
-#Menú desplegable para seleccionar el fabricante 1 y 2.
-#Los índices 1 y 2 se utilizan para establecer valores predeterminados para el menú desplegable.
-manufacturer1 = st.selectbox('Manufacturer 1', df['manufacturer'].unique(), index=1)
-manufacturer2 = st.selectbox('Manufacturer 2', df['manufacturer'].unique(), index=2)
-#Crear una casilla de verificación de histogram normalizado
+manufacturer1 = st.selectbox('Manufacturer 1', df['manufacturer'].dropna().unique(), index=1)
+manufacturer2 = st.selectbox('Manufacturer 2', df['manufacturer'].dropna().unique(), index=2)
 normalized = st.checkbox('Normalized')
-#Crear un histogram con la entrada fabricante1 y fabricante2
+
+# Filter out rows where 'price' is NaN for the selected manufacturers
+df_filtered = df[df['price'].notna()]
+
 fig = px.histogram()
-fig.add_trace(go.Histogram(x=df[df['manufacturer'] == manufacturer1]['price'], name=manufacturer1, opacity=0.75, histnorm='percent'))
-fig.add_trace(go.Histogram(x=df[df['manufacturer'] == manufacturer2]['price'], name=manufacturer2, opacity=0.75, histnorm='percent'))
-#Normalizar el histogram si la casilla de verificación está marcada
+fig.add_trace(go.Histogram(x=df_filtered[df_filtered['manufacturer'] == manufacturer1]['price'], 
+                           name=manufacturer1, opacity=0.75, histnorm='percent'))
+fig.add_trace(go.Histogram(x=df_filtered[df_filtered['manufacturer'] == manufacturer2]['price'], 
+                           name=manufacturer2, opacity=0.75, histnorm='percent'))
+
+# Normalize the histogram if the checkbox is marked
 if normalized:
     fig.update_layout(barmode='overlay')
     fig.update_traces(opacity=0.75)
-#x-axis title
+
+# Set axis titles
 fig.update_xaxes(title_text='Price')
-#y-axis title
 fig.update_yaxes(title_text='Percentage')
-#Plot de histogram
+
+# Display the histogram plot
 st.plotly_chart(fig)
 
-
-
-#Scatter plot matrix 
+# Scatter plot matrix
 st.subheader('Scatter plot matrix')
-#Menú desplegable para cada dimensión
-#Los índices 1, 2 y 3 se utilizan para establecer valores predeterminados para el menú desplegable.
-x_axis = st.selectbox('X axis', df.columns, index=1)
-y_axis = st.selectbox('Y axis', df.columns, index=2)
-#Desplegable para el color
+numeric_columns = df.select_dtypes(include=['number']).columns
+x_axis = st.selectbox('X axis', numeric_columns, index=1)
+y_axis = st.selectbox('Y axis', numeric_columns, index=2)
 color = st.selectbox('Color', df.columns, index=3)
-#Subtítulo de la matriz del diagrama de dispersión que se actualiza automáticamente
+
 st.subheader(f'Scatter plot matrix of {x_axis} and {y_axis} by {color}')
-#Crear scatter plot matrix
 fig = px.scatter_matrix(df, dimensions=[x_axis, y_axis], color=color)
-#Plot de scatter plot matrix
 st.plotly_chart(fig)
