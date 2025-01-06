@@ -14,18 +14,19 @@ df = pd.read_csv('vehicles_us_cleaned.csv')
 missing_values = df[['manufacturer', 'type', 'price']].isnull().sum()
 if missing_values.any():
     st.warning(f'Missing values detected in columns: {missing_values[missing_values > 0]}')
-    # Option 1: Drop rows with missing values in key columns
-    df = df.dropna(subset=['manufacturer', 'type', 'price']) 
-    # Option 2: Fill missing values with a placeholder (e.g., 'Unknown')
-    # df['manufacturer'].fillna('Unknown', inplace=True)
-    # df['type'].fillna('Unknown', inplace=True)
+    # Drop rows with missing values in key columns
+    df = df.dropna(subset=['manufacturer', 'type', 'price'])
 
 # Display the data in the app
 st.write(df)
 
 # Histogram of vehicle types by manufacturer
 st.subheader('Histogram of the types of vehicles by manufacturer')
-fig = px.histogram(df, x='manufacturer', color='type')
+
+# Drop rows where 'manufacturer' or 'type' is NaN before plotting
+df_clean = df.dropna(subset=['manufacturer', 'type'])
+
+fig = px.histogram(df_clean, x='manufacturer', color='type')
 st.plotly_chart(fig)
 
 # Histogram of price distribution between manufacturers
